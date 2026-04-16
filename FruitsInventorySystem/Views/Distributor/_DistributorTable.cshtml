@@ -1,0 +1,90 @@
+﻿@using FruitsInventorySystem.Models
+@model List<Distributor>
+
+<div class="table-box">
+    <table>
+        <tr>
+            <th>Distributor ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Date</th>
+            <th>Fruit ID</th>
+            <th>Fruit Name</th>
+            <th>Quality</th>
+            <th>Boxes</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Grand Total</th>
+            <th>Paid</th>
+            <th>Balance</th>
+            <th>Payment</th>
+            <th>Action</th>
+        </tr>
+
+        @if (Model != null && Model.Any())
+        {
+            var groups = Model.GroupBy(x => x.DistributorId);
+
+            foreach (var group in groups)
+            {
+                int count = group.Count();
+                bool first = true;
+
+                foreach (var item in group)
+                {
+                    <tr>
+                        @if (first)
+                        {
+                            <td rowspan="@count">@item.DistributorId</td>
+                            <td rowspan="@count">@item.DistributorName</td>
+                            <td rowspan="@count">@item.PhoneNumber</td>
+                            <td rowspan="@count">@item.Date?.ToString("dd-MM-yyyy")</td>
+                        }
+
+                        <td>@item.FruitId</td>
+                        <td>@item.FruitName</td>
+                        <td>@item.Quality</td>
+                        <td>@item.BoxCount</td>
+                        <td>@item.PricePerBox</td>
+                        <td>@item.Total</td>
+
+                        @if (first)
+                        {
+                            <td rowspan="@count">@item.GrandTotal</td>
+                            <td rowspan="@count">@item.PaidAmount</td>
+                            <td rowspan="@count">@item.RemainingAmount</td>
+                            <td rowspan="@count">@item.PaymentType</td>
+
+                            <td rowspan="@count">
+
+                                <!-- EDIT ICON -->
+                                <a asp-action="EditDistributor"
+                                   asp-route-id="@item.DistributorId"
+                                   class="action-icons" style="text-decoration:none">
+                                    ✏️
+                                </a>
+
+                                <!-- PRINT ICON -->
+                                <span class="action-icons"
+                                      onclick="printDistributor('@item.DistributorId')">
+                                    🖨️
+                                </span>
+
+                            </td>
+
+                            first = false;
+                        }
+                    </tr>
+                }
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="15" class="no-data">
+                    No data found
+                </td>
+            </tr>
+        }
+    </table>
+</div>

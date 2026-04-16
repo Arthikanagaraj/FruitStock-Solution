@@ -1,0 +1,460 @@
+﻿@using FruitsInventorySystem.Models
+@model List<Distributor>
+
+@{
+    Layout = "_Layout";
+}
+
+<style>
+    main {
+        align-items: flex-start !important;
+    }
+
+    .dashboard-wrapper {
+        width: 99%;
+        margin: 20px auto;
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+        .top-bar h2 {
+            margin: 0;
+        }
+
+    .new-btn {
+        background: #4f6fa5;
+        color: white;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+        .new-btn:hover {
+            background: #3b5886;
+        }
+
+    .table-box {
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* TABLE STYLE */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+        background: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        font-size: 13px; /* smaller font */
+    }
+
+    /* HEADER */
+    th {
+        background: #4f6fa5;
+        color: white;
+        padding: 8px;
+        text-align: center;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* TABLE CELLS */
+    td {
+        padding: 8px;
+        text-align: center;
+        border-bottom: 1px solid #e6e6e6;
+        white-space: nowrap; /* prevent breaking */
+    }
+
+    /* Alternate Row */
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Hover Effect */
+    tr:hover {
+        background-color: #eef3fb;
+    }
+
+    .action-icons {
+        cursor: pointer;
+        font-size: 17px;
+        margin: 0 5px;
+    }
+
+    /* No Data Row */
+    .no-data {
+        padding: 20px;
+        font-size: 15px;
+        color: red;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .filter-card {
+        background: white;
+        width: 60%;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .row1, .row2 {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+        .row1 input, .row2 input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+    .btn-row {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .search-btn {
+        background: #4f6fa5;
+        color: white;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 6px;
+        margin-right: 8px;
+    }
+
+    .reset-btn {
+        background: #999;
+        color: white;
+        padding: 8px 18px;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+
+    /* ================= RESPONSIVE DESIGN ================= */
+
+    /* Tablet */
+    @@media (max-width: 992px) {
+
+        .filter-card {
+            width: 90%;
+        }
+
+        .row1, .row2 {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 6px;
+        }
+    }
+
+    /* Mobile */
+    @@media (max-width: 600px) {
+
+        .dashboard-wrapper {
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .filter-card {
+            width: 100%;
+            padding: 15px;
+        }
+
+        .row1, .row2 {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .search-btn,
+        .reset-btn {
+            width: 100%;
+        }
+        /* Allow horizontal scroll only in mobile */
+        .table-box {
+            overflow-x: auto;
+        }
+
+        table {
+            min-width: 900px; /* prevents breaking */
+            font-size: 11px;
+        }
+
+        th, td {
+            padding: 5px;
+        }
+
+        .action-icons {
+            font-size: 14px;
+        }
+
+        .top-bar h2 {
+            font-size: 18px;
+            text-align: center;
+        }
+    }
+
+</style>
+
+<div class="dashboard-wrapper">
+
+    <div class="top-bar">
+        <h2>
+            <span style="cursor:pointer; font-size:22px;"
+                  onclick="location.href='/Admin/Dashboard'">
+                ←
+            </span>
+            Distributor Details</h2>
+    </div>
+
+    <!-- FILTER -->
+    <div class="filter-card">
+        <form method="get" action="/Admin/Distributor">
+
+            <div class="row1">
+                <input type="text" name="distributorName" placeholder="Distributor Name" />
+                <input type="text" name="fruitName" placeholder="Fruit Name" />
+            </div>
+
+            <div class="row2">
+                <input type="text" name="fruitId" placeholder="Fruit ID" />
+                <input type="date" name="date" />
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" class="search-btn">Search</button>
+                <a href="/Admin/Distributor" class="reset-btn">Reset</a>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="table-box">
+        <table>
+            <tr>
+                <th>Distributor ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Date</th>
+                <th>Fruit ID</th>
+                <th>Fruit Name</th>
+                <th>Quality</th>
+                <th>Boxes</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Grand Total</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                <th>Payment</th>
+                <th>Action</th>
+            </tr>
+
+            @if (Model == null || !Model.Any())
+            {
+                <tr>
+                    <td colspan="14" style="color:red;text-align:center">
+                        No row selected
+                    </td>
+                </tr>
+            }
+            else
+            {
+                var groups = Model.GroupBy(x => x.DistributorId);
+
+                foreach (var group in groups)
+                {
+                    int rowCount = group.Count();
+                    bool isFirst = true;
+
+                    foreach (var item in group)
+                    {
+                        <tr>
+
+                            @if (isFirst)
+                            {
+                                <td rowspan="@rowCount">@item.DistributorId</td>
+                                <td rowspan="@rowCount">@item.DistributorName</td>
+                                <td rowspan="@rowCount">@item.PhoneNumber</td>
+                                <td rowspan="@rowCount">@item.Date?.ToString("dd-MM-yyyy")</td>
+                            }
+
+                            <td>@item.FruitId</td>
+                            <td>@item.FruitName</td>
+                            <td>@item.Quality</td>
+                            <td>@item.BoxCount</td>
+                            <td>@item.PricePerBox</td>
+                            <td>@item.Total</td>
+
+                            @if (isFirst)
+                            {
+                                <td rowspan="@rowCount">@item.GrandTotal</td>
+                                <td rowspan="@rowCount">@item.PaidAmount</td>
+                                <td rowspan="@rowCount">@item.RemainingAmount</td>
+                                <td rowspan="@rowCount">@item.PaymentType</td>
+
+                                <td rowspan="@rowCount">
+                                    <a style="text-decoration:none" href="/Distributor/EditDistributor/@item.DistributorId">✏️</a>
+                                    <span class="action-icons"
+                                          onclick="printDistributor('@item.DistributorId')">
+                                        🖨️
+                                    </span>
+                                    <a style="text-decoration:none" href="#" onclick="openDelete('@item.DistributorId')">🗑️</a>
+                                </td>
+
+                                isFirst = false;
+                            }
+
+                        </tr>
+                    }
+                }
+            }
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function openDelete(id)
+    {
+        if (confirm("Are you sure want to delete?"))
+        {
+            window.location.href = "/Admin/DeleteDistributor/" + id;
+        }
+    }
+        function printDistributor(distributorId){
+
+        fetch('/Distributor/GetDistributorById?id=' + distributorId)
+        .then(response => response.json())
+        .then(data => {
+
+            let rows = "";
+            let subtotal = 0;
+            let totalGST = 0;
+
+            data.forEach(item => {
+
+                // ✅ GST based on Quality
+                let gstRate = 0;
+                if(item.quality === "A1") gstRate = 0.05;
+                else if(item.quality === "A2") gstRate = 0.03;
+
+                let itemGST = item.total * gstRate;
+                let total = item.total + itemGST;
+
+                subtotal += item.total;
+                totalGST += itemGST;
+
+                rows += "<tr>" +
+                    "<td>" + item.fruitName + "</td>" +
+                    "<td>" + item.quality + "</td>" +
+                    "<td>" + item.boxCount + "</td>" +
+                    "<td>" + item.pricePerBox + "</td>" +
+                    "<td>" + item.total.toFixed(2) + "</td>" +
+                    "<td>" + itemGST.toFixed(2) + "</td>" +
+                    "<td>" + total.toFixed(2) + "</td>" +
+                    "</tr>";
+            });
+
+            let first = data[0];
+            let date = new Date(first.date).toLocaleDateString('en-GB');
+
+            let grandTotal = subtotal + totalGST;
+            let paid = first.paidAmount || 0;
+            let balance = grandTotal - paid;
+
+            let content =
+            "<div style='position:relative; font-family:Arial;'>"
+
+            // ✅ WATERMARK
+            + "<img src='/images/fruit.png' style='position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:280px; opacity:0.06; z-index:0;' />"
+
+            // MAIN CONTENT
+            + "<div style='position:relative; z-index:1; display:flex;'>"
+
+            // LEFT SIDE
+            + "<div style='width:30%;background:#0d3b4c;color:white;padding:20px;'>"
+            + "<h2>FruitStock Solutions</h2>"
+            + "<p><b>GST No:</b> 33ABCDE1234F1Z5</p>"
+            + "<p><b>From</b><br>Arthi K</p>"
+            + "<p><b>To</b><br>" + first.distributorName + "</p>"
+            + "<p><b>Phone:</b><br>" + first.phoneNumber + "</p>"
+            + "</div>"
+
+            // RIGHT SIDE
+            + "<div style='width:70%;padding:20px;'>"
+            + "<h1 style='color:orange;'>DISTRIBUTOR INVOICE</h1>"
+            + "<p><b>Date:</b> " + date + "</p>"
+
+            // TABLE
+            + "<table border='1' width='100%' cellpadding='8' style='border-collapse:collapse;'>"
+            + "<tr style='background:orange;color:white;'>"
+            + "<th>Fruit</th><th>Quality</th><th>Boxes</th><th>Rate</th><th>Amount</th><th>GST</th><th>Total</th>"
+            + "</tr>"
+            + rows +
+            "</table>"
+
+            // TOTAL SECTION
+            + "<div style='text-align:right;margin-top:20px;'>"
+            + "<p>Subtotal: " + subtotal.toFixed(2) + "</p>"
+            + "<p>Total GST: " + totalGST.toFixed(2) + "</p>"
+            + "<h3>Grand Total: " + grandTotal.toFixed(2) + "</h3>"
+            + "<p>Paid: " + paid.toFixed(2) + "</p>"
+            + "<p>Balance: " + balance.toFixed(2) + "</p>"
+            + "<p>Payment: " + first.paymentType + "</p>"
+            + "</div>"
+
+            // SIGNATURE
+            + "<div style='margin-top:60px; display:flex; justify-content:space-between;'>"
+            + "<div style='text-align:center;'>"
+            + "<p>____________________</p>"
+            + "<p><b>Distributor Signature</b></p>"
+            + "</div>"
+            + "<div style='text-align:center;'>"
+            + "<p>____________________</p>"
+            + "<p><b>Authorized Signature</b></p>"
+            + "</div>"
+            + "</div>"
+
+            // PRINT HIDE STYLE
+            + "<style>@@media print { .no-print { display:none !important; } }</style>"
+
+            // BUTTONS
+            + "<div class='no-print' style='text-align:center;margin-top:30px;'>"
+            + "<button onclick='window.print()' style='padding:10px 20px;background:green;color:white;border:none;border-radius:5px;'>Print</button>"
+            + "<button onclick='window.close()' style='padding:10px 20px;background:red;color:white;border:none;border-radius:5px;margin-left:10px;'>Cancel</button>"
+            + "</div>"
+
+            + "</div></div>";
+
+            let win = window.open("", "", "width=1000,height=700");
+            win.document.write(content);
+            win.document.close();
+
+        });
+    }
+</script>

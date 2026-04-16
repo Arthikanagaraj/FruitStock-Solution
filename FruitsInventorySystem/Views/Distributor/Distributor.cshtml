@@ -1,0 +1,539 @@
+﻿@using FruitsInventorySystem.Models
+@model List<Distributor>
+@{
+    ViewData["Title"] = "Distributor Entry";
+}
+
+<style>
+    .form-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .form-card {
+        width: 650px;
+        background: #f4f6f9;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+        .form-card label {
+            font-weight: 600;
+        }
+
+        .form-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-card input,
+        .form-card select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+    .fruit-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+        .fruit-row input,
+        .fruit-row select {
+            flex: 1;
+        }
+
+    .delete-btn {
+        width: 45px;
+        height: 40px;
+        margin-top: 5px;
+    }
+
+    .add-btn {
+        background: #4f6fa5;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .save-btn {
+        background: #4f6fa5;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        width: 100%;
+    }
+
+    .delete-btn {
+        background: red;
+        color: white;
+        border: none;
+        padding: 6px;
+        border-radius: 5px;
+    }
+
+    @@media (max-width: 768px) {
+
+        .fruit-row {
+            flex-wrap: wrap;
+        }
+
+            .fruit-row input,
+            .fruit-row select {
+                flex: 1 1 48%;
+            }
+
+        .delete-btn {
+            flex: 1 1 100%;
+        }
+    }
+
+    @@media (max-width: 600px) {
+
+        .fruit-row {
+            flex-direction: column;
+        }
+
+            .fruit-row input,
+            .fruit-row select,
+            .delete-btn {
+                width: 100%;
+            }
+    }
+
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+        <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+
+            <span style="cursor:pointer; font-size:22px;"
+                  onclick="window.history.back();">
+                ←
+            </span>
+
+            <h2 style="margin:0;">Distributor Entry</h2>
+
+        </div>
+
+        <form method="post" asp-action="SaveDistributor">
+
+            <label>Distributor ID</label>
+            <input type="text" id="distributorIdDisplay"
+                   value="@(Model?.FirstOrDefault()?.DistributorId)"
+                   readonly />
+
+            <input type="hidden" id="distributorId"
+                   name="DistributorId"
+                   value="@(Model?.FirstOrDefault()?.DistributorId)" />
+
+            <label>Distributor Name</label>
+            <input type="text" id="distributorName"
+                   name="DistributorName"
+                   value="@(Model?.FirstOrDefault()?.DistributorName)"
+                   oninput="generateDistributorId()" minlength="3" required />
+
+            <label>Phone Number</label>
+            <input type="tel" id="phoneNumber"
+                   name="PhoneNumber"
+                   value="@(Model?.FirstOrDefault()?.PhoneNumber)"
+                   maxlength="10" pattern="[0-9]{10}"
+                   oninput="generateDistributorId()" required />
+
+            <label>Date</label>
+            <input type="date"
+                   name="Date"
+                   value="@(Model?.FirstOrDefault()?.Date?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"))"
+                   readonly />
+
+            <br />
+
+            <div id="fruitContainer"></div>
+
+            <button type="button" class="add-btn" onclick="addRow()">+ Add Fruit</button>
+
+            <label>Grand Total</label>
+            <input type="number" id="grandTotal" name="GrandTotal" readonly />
+
+            <label>Paid Amount</label>
+            <input type="number" id="paid" name="PaidAmount"
+                   oninput="calculateBalance()" />
+
+            <label>Remaining Amount</label>
+            <input type="number" id="balance" name="RemainingAmount" readonly />
+
+            <label>Payment Type</label>
+            <select name="PaymentType" required>
+                <option value="Cash">Cash</option>
+                <option value="GPay">GPay</option>
+                <option value="UPI">UPI</option>
+            </select>
+
+            <br />
+            <button type="submit" class="save-btn">Save Distributor</button>
+            <input type="hidden" name="ReturnUrl"
+                   value="@Context.Request.Headers["Referer"]" />
+        </form>
+    </div>
+</div>
+<script>
+
+    let container = document.getElementById("fruitContainer");
+
+            function generateDistributorId() {
+
+        let name = document.getElementById("distributorName").value.trim();
+        let phone = document.getElementById("phoneNumber").value.trim();
+
+        let idField = document.getElementById("distributorId");
+        let displayField = document.getElementById("distributorIdDisplay");
+
+        if (name.length >= 3 && phone.length >= 4) {
+
+            let namePart = name.substring(0, 3).toUpperCase();
+            let phonePart = phone.substring(phone.length - 4);
+
+            let newId = namePart + phonePart;
+
+            // ✅ ALWAYS UPDATE (EDIT + NEW)
+            idField.value = newId;
+            displayField.value = newId;
+        }
+    }
+
+    /* ==============================
+       STOCK FROM SERVER
+    ================================= */
+
+    let fullStock = [
+    @foreach (var item in ViewBag.StockList)
+    {
+            <text>
+            {
+                fruit: "@item.FruitName",
+                quality: "@item.Quality",
+                available: @item.Available
+            },
+            </text>
+    }
+    ];
+
+    /* ==============================
+       GET SELECTED COMBINATIONS
+    ================================= */
+
+    function getSelectedCombinations(excludeRow = null) {
+
+        let selected = [];
+
+        document.querySelectorAll(".fruit-row").forEach(r => {
+
+            if (r === excludeRow) return;
+
+            let f = r.querySelector("[name='FruitName']").value;
+            let q = r.querySelector("[name='Quality']").value;
+
+            if (f && q) {
+                selected.push({ fruit: f, quality: q });
+            }
+        });
+
+        return selected;
+    }
+
+    /* ==============================
+       GET REMAINING STOCK (FINAL FIX)
+    ================================= */
+
+    function getRemainingStock(row, fruit, quality) {
+
+        let stockItem = fullStock.find(x =>
+            x.fruit === fruit && x.quality === quality
+        );
+
+        if (!stockItem) return 0;
+
+        let used = 0;
+
+        document.querySelectorAll(".fruit-row").forEach(r => {
+
+            if (r === row) return; // ✅ skip current row
+
+            let f = r.querySelector("[name='FruitName']").value;
+            let q = r.querySelector("[name='Quality']").value;
+            let b = Number(r.querySelector("[name='BoxCount']").value) || 0;
+
+            if (f === fruit && q === quality) {
+                used += b;
+            }
+        });
+
+        let remaining = stockItem.available - used;
+
+        return remaining < 0 ? 0 : remaining;
+    }
+
+    /* ==============================
+       ADD ROW
+    ================================= */
+
+    function addRow(fid = "", fname = "", qualityVal = "", boxVal = "", priceVal = "", totalVal = "") {
+
+        let row = document.createElement("div");
+        row.className = "fruit-row";
+
+        row.innerHTML = `
+            <input type="text" class="fruitIdDisplay" readonly>
+            <input type="hidden" name="FruitId">
+
+            <select name="FruitName" required></select>
+            <select name="Quality" required></select>
+
+            <input type="number" name="BoxCount" min="1" required>
+            <input type="number" name="PricePerBox" required>
+            <input type="number" name="Total" readonly>
+
+            <button type="button" class="delete-btn">X</button>
+        `;
+
+        container.appendChild(row);
+
+        let fruitSelect = row.querySelector("[name='FruitName']");
+        let qualitySelect = row.querySelector("[name='Quality']");
+        let boxInput = row.querySelector("[name='BoxCount']");
+        let priceInput = row.querySelector("[name='PricePerBox']");
+        let hiddenFruitId = row.querySelector("[name='FruitId']");
+        let displayFruitId = row.querySelector(".fruitIdDisplay");
+
+        /* ===== LOAD FRUIT ===== */
+
+        function loadFruitDropdown() {
+
+            let selected = getSelectedCombinations(row);
+
+            let fruits = [...new Set(fullStock.map(x => x.fruit))];
+
+            let availableFruits = fruits.filter(fruit => {
+
+                let totalQualities = fullStock
+                    .filter(x => x.fruit === fruit)
+                    .map(x => x.quality);
+
+                let selectedQualities = selected
+                    .filter(x => x.fruit === fruit)
+                    .map(x => x.quality);
+
+                return selectedQualities.length < totalQualities.length;
+            });
+
+            fruitSelect.innerHTML =
+                `<option value="">Fruit</option>` +
+                availableFruits.map(f => `<option value="${f}">${f}</option>`).join("");
+        }
+
+        loadFruitDropdown();
+
+        /* ===== FRUIT CHANGE ===== */
+
+        fruitSelect.addEventListener("change", function () {
+
+            let selected = getSelectedCombinations(row);
+
+            let fruit = this.value;
+
+            let allQualities = fullStock
+                .filter(x => x.fruit === fruit)
+                .map(x => x.quality);
+
+            let usedQualities = selected
+                .filter(x => x.fruit === fruit)
+                .map(x => x.quality);
+
+            let availableQualities = allQualities
+                .filter(q => !usedQualities.includes(q));
+
+            qualitySelect.innerHTML =
+                `<option value="">Quality</option>` +
+                availableQualities.map(q => `<option value="${q}">${q}</option>`).join("");
+
+            updateFruitId();
+        });
+
+        /* ===== QUALITY CHANGE ===== */
+
+        qualitySelect.addEventListener("change", function () {
+
+            updateFruitId();
+
+            let fruit = fruitSelect.value;
+            let quality = this.value;
+
+            let remaining = getRemainingStock(row, fruit, quality);
+
+            boxInput.max = remaining;
+            boxInput.placeholder = "1 - " + remaining;
+        });
+
+        function updateFruitId() {
+
+            let fruit = fruitSelect.value;
+            let quality = qualitySelect.value;
+
+            if (!fruit || !quality) return;
+
+            let id = fruit.substring(0,3).toUpperCase() + quality.toUpperCase();
+
+            hiddenFruitId.value = id;
+            displayFruitId.value = id;
+        }
+
+        /* ===== BOX INPUT ===== */
+
+        boxInput.addEventListener("input", function () {
+
+            let fruit = fruitSelect.value;
+            let quality = qualitySelect.value;
+
+            let remaining = getRemainingStock(row, fruit, quality);
+
+            if (Number(this.value) > remaining) {
+                alert("Only " + remaining + " boxes available.");
+                this.value = remaining;
+            }
+
+            calculateRowTotal(row);
+        });
+
+        /* ===== PRICE ===== */
+
+        priceInput.addEventListener("input", function () {
+            calculateRowTotal(row);
+        });
+
+        /* ===== DELETE ===== */
+
+        row.querySelector(".delete-btn").addEventListener("click", function () {
+            row.remove();
+            calculateGrandTotal();
+        });
+
+        /* ===== EDIT RESTORE ===== */
+
+        if (fname) {
+
+            fruitSelect.value = fname;
+            fruitSelect.dispatchEvent(new Event("change"));
+
+            qualitySelect.value = qualityVal;
+
+            hiddenFruitId.value = fid;
+            displayFruitId.value = fid;
+
+            boxInput.value = boxVal;
+            priceInput.value = priceVal;
+            row.querySelector("[name='Total']").value = totalVal;
+
+            // 🔥 IMPORTANT FIX
+            setTimeout(() => {
+                        let remaining = getRemainingStock(row, fname, qualityVal);
+
+                        // ✅ max (edit support)
+                        let current = Number(boxVal) || 0;
+                        let finalMax = remaining + current;
+                        boxInput.max = finalMax;
+
+                        // ✅ placeholder (ONLY available stock)
+                        boxInput.placeholder = "1 - " + remaining;
+            }, 100);
+        }
+
+        calculateRowTotal(row);
+    }
+
+    /* ==============================
+       CALCULATIONS
+    ================================= */
+
+    function calculateRowTotal(row) {
+
+        let box = Number(row.querySelector("[name='BoxCount']").value) || 0;
+        let price = Number(row.querySelector("[name='PricePerBox']").value) || 0;
+
+        row.querySelector("[name='Total']").value = box * price;
+
+        calculateGrandTotal();
+    }
+
+    function calculateGrandTotal() {
+
+        let sum = 0;
+
+        document.querySelectorAll("[name='Total']").forEach(t => {
+            sum += Number(t.value) || 0;
+        });
+
+        document.getElementById("grandTotal").value = sum;
+
+        calculateBalance();
+    }
+
+    function calculateBalance() {
+
+        let grand = Number(document.getElementById("grandTotal").value) || 0;
+        let paid = Number(document.getElementById("paid").value) || 0;
+
+        document.getElementById("balance").value = grand - paid;
+    }
+
+    /* ==============================
+       INITIAL LOAD
+    ================================= */
+
+    window.onload = function () {
+
+    @if (Model != null && Model.Any())
+    {
+            foreach (var f in Model)
+            {
+                    <text>
+                    addRow(
+                        "@f.FruitId",
+                        "@f.FruitName",
+                        "@f.Quality",
+                        "@f.BoxCount",
+                        "@f.PricePerBox",
+                        "@f.Total"
+                    );
+                    </text>
+            }
+
+            var first = Model.First();
+
+            <text>
+            document.getElementById("paid").value = "@(first.PaidAmount ?? 0)";
+            document.getElementById("balance").value = "@(first.RemainingAmount ?? 0)";
+            document.getElementById("grandTotal").value = "@(first.GrandTotal ?? 0)";
+            </text>
+    }
+    else
+    {
+            <text>addRow();</text>
+    }
+
+    setTimeout(() => {
+        calculateGrandTotal();
+    }, 100);
+
+    };
+
+</script>

@@ -1,0 +1,405 @@
+﻿@using FruitsInventorySystem.Models
+@model List<Supplier>
+
+@{
+    ViewData["Title"] = "Supplier Entry";
+    var first = Model?.FirstOrDefault();
+}
+
+<style>
+    .form-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .form-card {
+        width: 650px;
+        background: #f4f6f9;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+        .form-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-card label {
+            font-weight: 600;
+        }
+
+        .form-card input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .form-card select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+    .fruit-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+        .fruit-row input {
+            flex: 1;
+        }
+
+    .add-btn {
+        background: #4f6fa5;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .save-btn {
+        background: #4f6fa5;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        width: 100%;
+    }
+
+    .delete-btn {
+        background: red;
+        color: white;
+        border: none;
+        padding: 6px;
+        border-radius: 5px;
+    }
+
+    /* ================= RESPONSIVE ================= */
+
+    /* Tablet */
+    @@media (max-width: 992px) {
+
+        .form-card {
+            width: 90%;
+        }
+
+        .fruit-row {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+            .fruit-row input {
+                flex: 1 1 48%;
+            }
+
+        .delete-btn {
+            flex: 1 1 100%;
+        }
+    }
+
+
+    /* Mobile */
+    @@media (max-width: 600px) {
+
+        .form-container {
+            padding: 0 10px;
+        }
+
+        .form-card {
+            width: 100%;
+            padding: 20px;
+        }
+
+            .form-card h2 {
+                font-size: 20px;
+            }
+
+        .fruit-row {
+            flex-direction: column;
+        }
+
+            .fruit-row input {
+                width: 100%;
+            }
+
+        .add-btn,
+        .save-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-bottom: 12px;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+
+        <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+
+            <span style="cursor:pointer; font-size:22px;"
+                  onclick="window.history.back();">
+                ←
+            </span>
+
+            <h2 style="margin:0;">Supplier Entry</h2>
+
+        </div>
+
+        <form method="post" asp-action="SaveSupplier">
+
+            <label>Supplier ID</label>
+            <input type="text" name="SupplierId" id="supplierId"
+                   value="@first?.SupplierId" readonly required />
+
+            <label>Supplier Name</label>
+            <input type="text"
+                   name="SupplierName"
+                   id="supplierName"
+                   value="@first?.SupplierName"
+                   minlength="3"
+                   pattern="[A-Za-z ]{3,}"
+                   title="Name must be at least 3 letters"
+                   oninput="validateName(); generateSupplierId();"
+                   required />
+
+            <label>Phone Number</label>
+            <input type="tel"
+                   name="PhoneNumber"
+                   id="PhoneNumber"
+                   value="@first?.PhoneNumber"
+                   maxlength="10"
+                   pattern="[0-9]{10}"
+                   title="Phone number must be exactly 10 digits"
+                   oninput="validatePhone(); generateSupplierId();"
+                   required />
+
+            <label>Date</label>
+            <input type="date"
+                   name="Date"
+                   value="@(first?.Date != null ? first.Date.Value.ToString("yyyy-MM-dd") : DateTime.Today.ToString("yyyy-MM-dd"))"
+                   readonly />
+
+            <div id="fruitContainer"></div>
+
+            <button type="button" class="add-btn" onclick="addRow()">+ Add Fruit</button>
+
+            <label>Grand Total</label>
+            <input type="number" name="GrandTotal" id="grandTotal"
+                   value="@first?.GrandTotal" readonly required />
+
+            <label>Paid Amount</label>
+            <input type="number" name="PaidAmount" id="paid"
+                   value="@first?.PaidAmount"
+                   oninput="calcBalance()" />
+
+            <label>Remaining Amount</label>
+            <input type="number" name="RemainingAmount" id="balance"
+                   value="@first?.RemainingAmount"
+                   readonly required />
+
+            <label>Payment Type</label>
+            <select name="PaymentType" required>
+                <option value="Cash" selected="@(first?.PaymentType == "Cash")">Cash</option>
+                <option value="GPay" selected="@(first?.PaymentType == "GPay")">GPay</option>
+                <option value="UPI" selected="@(first?.PaymentType == "UPI")">UPI</option>
+            </select>
+
+            <br />
+            <button type="submit" class="save-btn">Save Supplier</button>
+            <input type="hidden" name="ReturnUrl" value="@Context.Request.Headers["Referer"]" />
+
+        </form>
+    </div>
+</div>
+
+<script>
+
+    let container = document.getElementById("fruitContainer");
+
+    function addRow(fid="", fname="", quality="", box="", price="", total=""){
+
+    let row=document.createElement("div");
+    row.className="fruit-row";
+
+    row.innerHTML=`
+    <input name="FruitId" value="${fid}" placeholder="Fruit ID" readonly required>
+
+    <input name="FruitName"
+    value="${fname}"
+    placeholder="Fruit Name"
+    oninput="generateFruitId(this)"
+    required>
+
+    <input name="Quality"
+    value="${quality}"
+    placeholder="Quality"
+    oninput="generateFruitId(this)"
+    required>
+
+    <input type="number" name="BoxCount"
+    value="${box}"
+    placeholder="Boxes"
+    oninput="calcRow(this)"
+    required>
+
+    <input type="number" name="PricePerBox"
+    value="${price}"
+    placeholder="Price"
+    oninput="calcRow(this)"
+    required>
+
+    <input type="number" name="Total"
+    value="${total}"
+    placeholder="Total"
+    readonly required>
+
+    <button type="button" class="delete-btn"
+    onclick="deleteRow(this)">X</button>
+    `;
+
+    container.appendChild(row);
+    }
+
+    function generateFruitId(el){
+
+    let row = el.parentElement;
+
+    let fruit = row.children[1].value.trim();
+    let quality = row.children[2].value.trim();
+
+    if(fruit.length >=3 && quality.length >0){
+
+    let fruitPart = fruit.substring(0,3).toUpperCase();
+    let qualityPart = quality.toUpperCase();
+
+    row.children[0].value = fruitPart + qualityPart;
+    }
+    }
+
+    function deleteRow(btn){
+    btn.parentElement.remove();
+    calcGrandTotal();
+    }
+
+    function calcRow(el){
+
+    let row = el.parentElement;
+
+    let box = Number(row.children[3].value) || 0;
+    let price = Number(row.children[4].value) || 0;
+
+    row.children[5].value = box * price;
+
+    calcGrandTotal();
+    }
+
+    function calcGrandTotal(){
+
+    let rows = document.querySelectorAll(".fruit-row");
+    let grand = 0;
+
+    rows.forEach(r=>{
+    grand += Number(r.children[5].value) || 0;
+    });
+
+    document.getElementById("grandTotal").value = grand;
+
+    calcBalance();
+    }
+
+    function calcBalance(){
+
+    let grand = Number(document.getElementById("grandTotal").value) || 0;
+    let paid = Number(document.getElementById("paid").value) || 0;
+
+    document.getElementById("balance").value = grand - paid;
+    }
+
+    function generateSupplierId(){
+
+    let name = document.getElementById("supplierName").value.trim();
+    let phone = document.getElementById("PhoneNumber").value.trim();
+
+    if(name.length >=3 && phone.length >=4){
+
+    let namePart = name.substring(0,3).toUpperCase();
+    let phonePart = phone.slice(-4);
+
+    document.getElementById("supplierId").value = namePart + phonePart;
+    }
+    }
+
+        function validateName() {
+
+        let nameInput = document.getElementById("supplierName");
+        let name = nameInput.value.trim();
+
+        if (name.length < 3) {
+            nameInput.setCustomValidity("Name must be at least 3 letters");
+        } else {
+            nameInput.setCustomValidity("");
+        }
+    }
+
+    function validatePhone() {
+
+        let phoneInput = document.getElementById("PhoneNumber");
+        let phone = phoneInput.value.trim();
+
+        if (!/^[0-9]{10}$/.test(phone)) {
+            phoneInput.setCustomValidity("Phone number must be exactly 10 digits");
+        } else {
+            phoneInput.setCustomValidity("");
+        }
+    }
+
+    window.onload=function(){
+
+    let fruits=[];
+
+    @if (Model != null)
+    {
+                foreach (var f in Model)
+                {
+                            <text>
+                            fruits.push({
+                            fid:"@f.FruitId",
+                            fname:"@f.FruitName",
+                            quality:"@f.Quality",
+                            box:"@f.BoxCount",
+                            price:"@f.PricePerBox",
+                            total:"@f.Total"
+                            });
+                            </text>
+                }
+    }
+
+    if(fruits.length>0){
+    fruits.forEach(f=>{
+    addRow(f.fid,f.fname,f.quality,f.box,f.price,f.total);
+    });
+    }
+    else{
+    addRow();
+    }
+    }
+
+</script>

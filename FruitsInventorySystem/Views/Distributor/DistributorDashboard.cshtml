@@ -1,0 +1,313 @@
+﻿@using FruitsInventorySystem.Models
+@model List<Distributor>
+
+@{
+    Layout = "_Layout";
+    bool isSearch = Context.Request.Query.ContainsKey("searchDate");
+}
+
+<style>
+
+    main {
+        align-items: flex-start !important;
+    }
+
+    .dashboard-wrapper {
+        width: 100%;
+        margin: 10px auto;
+        padding: 0 5px;
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .new-btn {
+        background: #4f6fa5;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        table-layout: auto; /* Important */
+    }
+
+    th {
+        background: #4f6fa5;
+        color: white;
+        padding: 4px; /* Reduced more */
+        font-size: 11px; /* Smaller */
+        text-align: center;
+    }
+
+    td {
+        padding: 4px; /* Reduced more */
+        font-size: 11px; /* Smaller */
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        word-break: break-word;
+    }
+
+    .action-icons {
+        font-size: 14px;
+        margin: 0 3px;
+        cursor: pointer;
+    }
+
+    /* REMOVE ANY SCROLL */
+    .table-box {
+        overflow-x: hidden !important;
+    }
+
+    .no-data {
+        padding: 20px;
+        font-size: 18px;
+        color: #4f6fa5;
+        font-weight: bold;
+    }
+
+    /* ================= RESPONSIVE ================= */
+
+    /* Tablet */
+    @@media (max-width: 992px) {
+
+        th, td {
+            font-size: 10px;
+            padding: 3px;
+        }
+
+        .top-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+            .top-bar form {
+                width: 100%;
+            }
+    }
+
+    /* Mobile */
+    @@media (max-width: 600px) {
+
+        table, thead, tbody, th, td, tr {
+            display: block;
+            width: 100%;
+        }
+
+        table {
+            border: none;
+        }
+
+        tr {
+            background: #fff;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        th {
+            display: none;
+        }
+
+        td {
+            text-align: left;
+            padding: 6px 5px;
+            border: none;
+            font-size: 12px;
+            position: relative;
+        }
+
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                display: block;
+                margin-bottom: 3px;
+                color: #4f6fa5;
+                font-size: 11px;
+            }
+
+        .action-icons {
+            font-size: 18px;
+        }
+
+        .top-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .new-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+</style>
+
+<div class="dashboard-wrapper">
+
+    <div class="top-bar">
+        <h2 style="display:flex; align-items:center; gap:10px;">
+
+            <span style="cursor:pointer; font-size:22px;"
+                  onclick="location.href='/Employee/Dashboard'">
+                ←
+            </span>
+
+            Distributor Dashboard
+        </h2>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+            <form id="searchForm" method="get" action="/Distributor/DistributorDashboard"
+                  style="display:flex; gap:10px;">
+
+                <input type="text"
+                       name="distributorName"
+                       placeholder="Distributor Name"
+                       value="@Context.Request.Query["distributorName"]" />
+
+                <input type="date"
+                       name="searchDate"
+                       value="@Context.Request.Query["searchDate"]" />
+
+            </form>
+
+            <button class="new-btn"
+                    onclick="location.href='/Distributor/Distributor'">
+                + New Entry
+            </button>
+        </div>
+    </div>
+
+    <div id="tableContainer">
+        @Html.Partial("_DistributorTable", Model)
+    </div>
+</div>
+<script>
+    function printDistributor(distributorId) {
+
+        fetch('/Distributor/GetDistributorById?id=' + distributorId)
+        .then(response => response.json())
+        .then(data => {
+
+            let rows = "";
+            let subtotal = 0;
+            let totalGST = 0;
+
+            data.forEach(item => {
+
+                let gstRate = 0;
+                if (item.quality === "A1") gstRate = 0.05;
+                else if (item.quality === "A2") gstRate = 0.03;
+
+                let itemGST = item.total * gstRate;
+                let total = item.total + itemGST;
+
+                subtotal += item.total;
+                totalGST += itemGST;
+
+                rows += "<tr>" +
+                    "<td>" + item.fruitName + "</td>" +
+                    "<td>" + item.quality + "</td>" +
+                    "<td>" + item.boxCount + "</td>" +
+                    "<td>" + item.pricePerBox + "</td>" +
+                    "<td>" + item.total.toFixed(2) + "</td>" +
+                    "<td>" + itemGST.toFixed(2) + "</td>" +
+                    "<td>" + total.toFixed(2) + "</td>" +
+                    "</tr>";
+            });
+
+            let first = data[0];
+            let date = new Date(first.date).toLocaleDateString('en-GB');
+
+            let grandTotal = subtotal + totalGST;
+            let paid = first.paidAmount || 0;
+            let balance = grandTotal - paid;
+
+            let content =
+            "<div style='position:relative; font-family:Arial;'>"
+            + "<img src='/images/fruit.png' style='position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:280px; opacity:0.06; z-index:0;' />"
+            + "<div style='position:relative; z-index:1; display:flex;'>"
+            + "<div style='width:30%;background:#0d3b4c;color:white;padding:20px;'>"
+            + "<h2>FruitStock Solutions</h2>"
+            + "<p><b>GST No:</b> 33ABCDE1234F1Z5</p>"
+            + "<p><b>From</b><br>Arthi K</p>"
+            + "<p><b>To</b><br>" + first.distributorName + "</p>"
+            + "<p><b>Phone:</b><br>" + first.phoneNumber + "</p>"
+            + "</div>"
+            + "<div style='width:70%;padding:20px;'>"
+            + "<h1 style='color:orange;'>DISTRIBUTOR INVOICE</h1>"
+            + "<p><b>Date:</b> " + date + "</p>"
+            + "<table border='1' width='100%' cellpadding='8' style='border-collapse:collapse;'>"
+            + "<tr style='background:orange;color:white;'>"
+            + "<th>Fruit</th><th>Quality</th><th>Boxes</th><th>Rate</th><th>Amount</th><th>GST</th><th>Total</th>"
+            + "</tr>"
+            + rows +
+            "</table>"
+            + "<div style='text-align:right;margin-top:20px;'>"
+            + "<p>Subtotal: " + subtotal.toFixed(2) + "</p>"
+            + "<p>Total GST: " + totalGST.toFixed(2) + "</p>"
+            + "<h3>Grand Total: " + grandTotal.toFixed(2) + "</h3>"
+            + "<p>Paid: " + paid.toFixed(2) + "</p>"
+            + "<p>Balance: " + balance.toFixed(2) + "</p>"
+            + "<p>Payment: " + first.paymentType + "</p>"
+            + "</div>"
+            + "<div style='margin-top:60px; display:flex; justify-content:space-between;'>"
+            + "<div style='text-align:center;'>"
+            + "<p>____________________</p>"
+            + "<p><b>Distributor Signature</b></p>"
+            + "</div>"
+            + "<div style='text-align:center;'>"
+            + "<p>____________________</p>"
+            + "<p><b>Authorized Signature</b></p>"
+            + "</div>"
+            + "</div>"
+            + "<style>@@media print { .no-print { display:none !important; } }</style>"
+            + "<div class='no-print' style='text-align:center;margin-top:30px;'>"
+            + "<button onclick='window.print()' style='padding:10px 20px;background:green;color:white;border:none;border-radius:5px;'>Print</button>"
+            + "<button onclick='window.close()' style='padding:10px 20px;background:red;color:white;border:none;border-radius:5px;margin-left:10px;'>Cancel</button>"
+            + "</div>"
+            + "</div></div>";
+
+            let win = window.open("", "", "width=1000,height=700");
+            win.document.write(content);
+            win.document.close();
+        });
+    }
+
+    const nameInput = document.querySelector('input[name="distributorName"]');
+    const dateInput = document.querySelector('input[name="searchDate"]');
+    const tableContainer = document.getElementById("tableContainer");
+
+    function loadData() {
+        const name = encodeURIComponent(nameInput.value.trim());
+        const date = encodeURIComponent(dateInput.value);
+
+        fetch(`/Distributor/DistributorTable?distributorName=${name}&searchDate=${date}`)
+            .then(response => response.text())
+            .then(data => {
+                tableContainer.innerHTML = data;
+            });
+    }
+
+    let typingTimer;
+    nameInput.addEventListener("input", function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(loadData, 300);
+    });
+
+    dateInput.addEventListener("change", loadData);
+</script>

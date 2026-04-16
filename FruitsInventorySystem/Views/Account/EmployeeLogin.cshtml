@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Employee Login";
+    Layout = "_Layout";
+}
+
+<div class="form-box">
+
+    <h2>Employee Login</h2>
+
+    @if (ViewBag.Error != null)
+    {
+        <p style="color:red; margin-bottom:10px;">
+            @ViewBag.Error
+        </p>
+    }
+
+    <form method="post">
+        <div class="form-group">
+            <label>User Name</label>
+            <input type="text" name="username" required />
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" required />
+        </div>
+
+        <button type="submit" class="form-btn">
+            Login
+        </button>
+    </form>
+
+    <div class="form-link">
+        New employee?
+        <a href="/Account/Register">Register</a>
+    </div>
+</div>

@@ -1,0 +1,446 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+    .wrapper {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 15px;
+        font-family: Segoe UI;
+    }
+
+    /* MAIN CARD */
+    .main-card {
+        background: #f3f4f6;
+        padding: 35px;
+        border-radius: 25px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        margin-bottom: 35px;
+    }
+
+    .title {
+        text-align: center;
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    /* BUTTONS */
+    .top-buttons {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+        .top-buttons button {
+            padding: 10px 28px;
+            margin: 5px;
+            border: none;
+            border-radius: 12px;
+            background: #4f6fa5;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+    /* FILTER ROW */
+    .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+        .filter-row h3 {
+            margin: 0;
+        }
+
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+        .filter-buttons a {
+            padding: 8px 16px;
+            background: #a8b9d6;
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+    /* DETAILS */
+    .details-row {
+        display: flex;
+        gap: 25px;
+    }
+
+    .detail-box {
+        flex: 1;
+        padding: 25px;
+        border-radius: 18px;
+        text-align: center;
+    }
+
+    .inlet {
+        background: #dbe8ff;
+    }
+
+    .outlet {
+        background: #ffdede;
+    }
+
+    .remaining {
+        background: #dff3e2;
+    }
+
+    /* GRAPH CARD */
+    .graph-card {
+        background: #f3f4f6;
+        padding: 35px;
+        border-radius: 25px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .graph-row {
+        display: flex;
+        gap: 40px;
+    }
+
+    .graph-box {
+        flex: 1;
+        background: white;
+        padding: 25px;
+        border-radius: 20px;
+    }
+
+    .graph-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    select {
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+
+    /* ================================= */
+    /* 📱 MOBILE RESPONSIVE SECTION */
+    /* ================================= */
+
+    @@media(max - width:992px) {
+
+        .details-row {
+            flex-direction: column;
+        }
+
+        .graph-row {
+            flex-direction: column;
+        }
+
+        .graph-box {
+            margin-bottom: 20px;
+        }
+    }
+
+    @@media(max - width:576px) {
+
+        .title {
+            font-size: 24px;
+        }
+
+        .filter-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .graph-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .top-buttons button {
+            width: 100%;
+            margin: 8px 0;
+        }
+    }
+
+</style>
+
+<div class="wrapper">
+
+    <!-- TOP SECTION -->
+    <div class="main-card">
+
+        <div class="title">Owner Dashboard</div>
+
+        <!-- TWO BUTTONS -->
+        <div class="top-buttons">
+            <button onclick="location.href='/Admin/StockApproval'">Inlet</button>
+            <button onclick="location.href='/Admin/Distributor'">Outlet</button>
+        </div>
+
+        <!-- 🔥 SAME LINE FILTER -->
+        <div class="filter-row">
+
+            <h3>📦 Fruit Wise Box Details</h3>
+
+            <input type="date"
+                   onchange="filterByDate(this.value)"
+                   style="padding:8px;border-radius:8px;border:1px solid #ccc;" />
+
+            <div class="filter-buttons">
+                <a href="#" onclick="loadDashboard('today'); return false;">Today</a>
+                <a href="#" onclick="loadDashboard('3days'); return false;">3 Days</a>
+                <a href="#" onclick="loadDashboard('week'); return false;">Week</a>
+                <input type="text"
+                       id="monthInput"
+                       value="@Context.Request.Query["month"]"
+                       placeholder="Month & Year"
+                       onfocus="changeToMonth(this)"
+                       onchange="monthFilter(this.value)"
+                       style="width:170px;padding:8px;border-radius:8px;border:1px solid #ccc;" />
+            </div>
+
+        </div>
+
+        <!-- DETAILS CARDS -->
+        <div class="details-row">
+
+            <div class="detail-box inlet">
+                <h4>Inlet (Supplier)</h4>
+                @if (ViewBag.Inlet != null)
+                {
+                    foreach (var item in ViewBag.Inlet)
+                    {
+                        <p><b>@item.Fruit</b> - @item.Boxes boxes</p>
+                    }
+                }
+            </div>
+
+            <div class="detail-box outlet">
+                <h4>Outlet (Distributor)</h4>
+                @if (ViewBag.Outlet != null)
+                {
+                    foreach (var item in ViewBag.Outlet)
+                    {
+                        <p><b>@item.Fruit</b> - @item.Boxes boxes</p>
+                    }
+                }
+            </div>
+
+            <div class="detail-box remaining">
+                <h4>Remaining</h4>
+                @if (ViewBag.Remaining != null)
+                {
+                    foreach (var item in ViewBag.Remaining)
+                    {
+                        <p><b>@item.Fruit</b> - @item.Boxes boxes</p>
+                    }
+                }
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- GRAPH SECTION -->
+    <div class="graph-card">
+
+        <div class="graph-row">
+
+            <!-- PIE -->
+            <div class="graph-box">
+
+                <div class="graph-header">
+                    <h4>Supplier vs Distributor</h4>
+                    <select id="pieFilter">
+                        <option value="today">Today</option>
+                        <option value="3days">3 Days</option>
+                        <option value="week">Week</option>
+                    </select>
+                </div>
+
+                <canvas id="pieChart"></canvas>
+
+            </div>
+
+
+            <!-- 🔥 NEW SIMPLE STRAIGHT LINE GRAPH -->
+            <div class="graph-box">
+
+                <div class="graph-header">
+                    <h4>Supplier vs Distributor</h4>
+                    <select id="lineFilter">
+                        <option value="today">Today</option>
+                        <option value="3days">3 Days</option>
+                        <option value="week">Week</option>
+                    </select>
+                </div>
+
+                <canvas id="lineChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+
+        function loadDashboard(filter){
+
+        fetch('/Admin/Dashboard?filterType=' + filter)
+        .then(res => res.text())
+        .then(html => {
+
+            let doc = new DOMParser().parseFromString(html, 'text/html');
+
+            document.querySelector('.details-row').innerHTML =
+                doc.querySelector('.details-row').innerHTML;
+        });
+    }
+
+    function filterByDate(date){
+        window.location.href = "/Admin/Dashboard?date=" + date;
+    }
+
+        function changeToMonth(input){
+        input.type = "month";
+    }
+
+    function monthFilter(value){
+        if(value){
+            window.location.href = "/Admin/Dashboard?month=" + value;
+        }
+    }
+
+    let pieChart;
+    let lineChart;
+
+    /* PIE */
+       function loadPie(filter, month=null, date=null){
+        let url = '/Admin/GetPieChartData?filterType=' + filter;
+
+        if(month) url += '&month=' + month;
+        if(date) url += '&date=' + date;
+
+        fetch(url)
+        .then(res=>res.json())
+        .then(data=>{
+            const ctx=document.getElementById('pieChart').getContext('2d');
+            if(pieChart) pieChart.destroy();
+
+            pieChart=new Chart(ctx,{
+                type:'pie',
+                data:{
+                    labels:['Supplier','Distributor'],
+                    datasets:[{
+                        data:[data.supplier,data.distributor],
+                        backgroundColor:['#4f6fa5','#ff6b6b']
+                    }]
+                }
+            });
+        });
+    }
+
+    /* 🔥 CLEAN STRAIGHT COMPARE LINE GRAPH */
+        function loadLine(filter){
+
+        fetch('/Admin/GetLineChartData?filterType=' + filter)
+        .then(res => res.json())
+        .then(data => {
+
+            const ctx = document.getElementById('lineChart').getContext('2d');
+
+            if(lineChart) lineChart.destroy();
+
+            lineChart = new Chart(ctx,{
+                type:'line',
+                data:{
+                    labels:data.labels,
+                    datasets:[
+                        {
+                            label:'Supplier',
+                            data:data.supplier,
+                            borderColor:'#1f4e79',
+                            borderWidth:4,
+                            pointRadius:6,
+                            pointBackgroundColor:'#1f4e79',
+                            pointBorderColor:'#fff',
+                            pointBorderWidth:2,
+                            tension:0.4,
+                            fill:false
+                        },
+                        {
+                            label:'Distributor',
+                            data:data.distributor,
+                            borderColor:'#c00000',
+                            borderWidth:4,
+                            pointRadius:6,
+                            pointBackgroundColor:'#c00000',
+                            pointBorderColor:'#fff',
+                            pointBorderWidth:2,
+                            tension:0.4,
+                            fill:false
+                        }
+                    ]
+                },
+                options:{
+                    responsive:true,
+                    plugins:{
+                        legend:{
+                            position:'top',
+                            labels:{
+                                font:{
+                                    size:14,
+                                    weight:'bold'
+                                }
+                            }
+                        }
+                    },
+                    scales:{
+                        x:{
+                            grid:{
+                                display:false
+                            }
+                        },
+                        y:{
+                            beginAtZero:true,
+                            grid:{
+                                color:'#e5e5e5'
+                            }
+                        }
+                    }
+                }
+            });
+
+        });
+    }
+
+    document.getElementById("pieFilter")
+        .addEventListener("change", function(){
+            loadPie(this.value);
+        });
+
+    document.getElementById("lineFilter")
+        .addEventListener("change", function(){
+            loadLine(this.value);
+        });
+
+    window.onload = function(){
+        loadPie("today");
+        loadLine("today");
+    };
+
+</script>

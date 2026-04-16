@@ -1,0 +1,176 @@
+﻿@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 🔥 HEADER HEIGHT FIX */
+    header {
+        height: 80px;
+    }
+
+    /* 🔥 FOOTER HEIGHT FIX */
+    footer {
+        height: 50px;
+    }
+
+    /* 🔥 MAIN AUTO FIT */
+    main {
+        height: calc(100vh - 130px); /* header + footer */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+   
+
+
+        header .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        header .nav-buttons button {
+            background: #3d5c8c;
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            margin-left: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+            header .nav-buttons button:hover {
+                background: #2f4f7f;
+            }
+
+
+    .dashboard-card {
+        background: white;
+        padding: 60px 80px;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        text-align: center;
+        max-width: 520px;
+        width: 100%;
+    }
+
+    .dashboard-card h2 {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+
+    .dashboard-buttons {
+        display: flex;
+        gap: 25px;
+        justify-content: center;
+    }
+
+    .dash-btn {
+        padding: 12px 30px;
+        background: #4f6fa1;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+        .dash-btn:hover {
+            background: #3d5c8c;
+        }
+
+    
+
+    @@media (max-width: 768px) {
+
+        header {
+            flex-direction: column;
+            justify-content: center;
+            height: auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+            header .nav-buttons {
+                margin-top: 10px;
+            }
+
+        .dashboard-card {
+            padding: 40px 30px;
+        }
+
+        .dashboard-buttons {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .dash-btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+
+        header .logo {
+            font-size: 24px;
+        }
+
+        header .nav-buttons button {
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+
+        .dashboard-card {
+            padding: 30px 20px;
+        }
+
+            .dashboard-card h2 {
+                font-size: 22px;
+            }
+
+        .dash-btn {
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        footer {
+            font-size: 13px;
+            padding: 12px 0;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-card">
+        <h2>Employee Dashboard</h2>
+
+        <div class="dashboard-buttons">
+            <button class="dash-btn" onclick="location.href='/Employee/SupplierDashboard'">
+                Supplier
+            </button>
+
+
+            <button class="dash-btn"
+                    onclick="location.href='/Distributor/DistributorDashboard'">
+                Distributor
+            </button>
+        </div>
+    </div>
+</div>

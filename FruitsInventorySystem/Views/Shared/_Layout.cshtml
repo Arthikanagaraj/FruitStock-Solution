@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Fruits Inventory</title>
+
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="~/images/fruit.png" alt="Logo" class="logo-img" /> FruitStock Solutions
+        </div>
+
+        <div class="nav-buttons">
+            <button onclick="location.href='/'">Home</button>
+            <button onclick="location.href='/Admin/Login'">Admin</button>
+            <button onclick="location.href='/Account/EmployeeLogin'">Employee</button>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer>
+        © 2026 FruitStock Solutions
+    </footer>
+
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>
