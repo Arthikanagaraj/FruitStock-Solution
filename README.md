@@ -1,0 +1,1 @@
+Built a Fruit Inventory Management System using C#, ASP.NET MVC, SQL Server, JavaScript, HTML, CSS, and Microsoft Visual Studio. Implemented a unique fruit code tracking system to manage supplier and distributor stock, prevent mismatches, and monitor inlet, outlet, and available stock through day, 3-day, weekly, and monthly dashboard reports.
